@@ -1,7 +1,9 @@
 import SwiftSyntax
 
-public struct DiscouragedNoneNameRule: SourceKitFreeRule, ConfigurationProviderRule {
+public struct DiscouragedNoneNameRule: SwiftSyntaxRule, ConfigurationProviderRule {
     public var configuration = SeverityConfiguration(.warning)
+
+    public init() {}
 
     public static var description = RuleDescription(
         identifier: "discouraged_none_name",
@@ -176,31 +178,22 @@ public struct DiscouragedNoneNameRule: SourceKitFreeRule, ConfigurationProviderR
         ]
     )
 
-    public init() {}
-
-    public func validate(file: SwiftLintFile) -> [StyleViolation] {
+    public func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor {
         Visitor(viewMode: .sourceAccurate)
-            .walk(file: file, handler: \.violationPositions)
-            .sorted { $0.position < $1.position }
-            .map { position, reason in
-                StyleViolation(
-                    ruleDescription: Self.description,
-                    severity: configuration.severity,
-                    location: Location(file: file, position: position),
-                    reason: reason
-                )
-            }
     }
 }
 
 private extension DiscouragedNoneNameRule {
-    final class Visitor: SyntaxVisitor {
-        private(set) var violationPositions: [(position: AbsolutePosition, reason: String)] = []
-
+    final class Visitor: ViolationsSyntaxVisitor {
         override func visitPost(_ node: EnumCaseElementSyntax) {
             let emptyParams = node.associatedValue?.parameterList.isEmpty ?? true
             if node.identifier.isNone, emptyParams {
-                violationPositions.append((node.positionAfterSkippingLeadingTrivia, reason(type: "`case`")))
+                violations.append(
+                    ReasonedRuleViolation(
+                        position: node.positionAfterSkippingLeadingTrivia,
+                        reason: reason(type: "`case`")
+                    )
+                )
             }
         }
 
@@ -224,7 +217,12 @@ private extension DiscouragedNoneNameRule {
                     continue
                 }
 
-                violationPositions.append((node.positionAfterSkippingLeadingTrivia, reason(type: type)))
+                violations.append(
+                    ReasonedRuleViolation(
+                        position: node.positionAfterSkippingLeadingTrivia,
+                        reason: reason(type: type)
+                    )
+                )
                 return
             }
         }
