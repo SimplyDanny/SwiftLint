@@ -1,5 +1,8 @@
 import ArgumentParser
+import Foundation
 import SwiftLintFramework
+
+private typealias RulesProviderFunction = @convention(c) () -> UnsafeMutableRawPointer
 
 extension SwiftLint {
     struct Lint: AsyncParsableCommand {
@@ -17,6 +20,8 @@ extension SwiftLint {
         var silenceDeprecationWarnings = false
         @Option(help: "The directory of the cache used when linting.")
         var cachePath: String?
+        @Option(help: "Plugin to load.")
+        var plugin: String?
         @Flag(help: "Ignore cache when linting.")
         var noCache = false
         @Flag(help: "Run all rules, even opt-in and disabled ones, ignoring `only_rules`.")
@@ -26,6 +31,8 @@ extension SwiftLint {
 
         func run() async throws {
             Issue.printDeprecationWarnings = !silenceDeprecationWarnings
+
+            loadAndRegisterRulesFromPlugin()
 
             let allPaths: [String]
             if let path {
@@ -64,6 +71,28 @@ extension SwiftLint {
                 inProcessSourcekit: common.inProcessSourcekit
             )
             try await LintOrAnalyzeCommand.run(options)
+        }
+
+        private func loadAndRegisterRulesFromPlugin() {
+            guard let plugin else {
+                return
+            }
+            guard let openRes = dlopen(plugin, RTLD_NOW | RTLD_LOCAL) else {
+                if dlerror() != nil {
+                    queuedFatalError("Unable to open library '\(plugin)'.")
+                } else {
+                    queuedFatalError("Unknown error while opening library '\(plugin)'.")
+                }
+            }
+            defer {
+                dlclose(openRes)
+            }
+            guard let rulesProvider = dlsym(openRes, "rulesProvider") else {
+                queuedFatalError("Unable to load symbol 'rulesProvider' from library '\(plugin)'.")
+            }
+            let function = unsafeBitCast(rulesProvider, to: RulesProviderFunction.self)
+            let forbidden = Unmanaged<RulesProvider>.fromOpaque(function()).takeRetainedValue()
+            RuleRegistry.shared.register(rules: forbidden.rules())
         }
     }
 }
