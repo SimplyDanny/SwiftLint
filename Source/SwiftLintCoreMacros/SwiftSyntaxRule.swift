@@ -12,7 +12,7 @@ enum SwiftSyntaxRule: ExtensionMacro {
     ) throws -> [ExtensionDeclSyntax] {
         [
             try ExtensionDeclSyntax("""
-                extension \(type): SwiftSyntaxRule {
+                extension \(type): SwiftSyntaxRule, Sendable {
                     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
                         Visitor(configuration: configuration, file: file)
                     }

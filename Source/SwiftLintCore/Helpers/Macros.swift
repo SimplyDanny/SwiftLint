@@ -54,7 +54,7 @@ public macro MakeAcceptableByConfigurationElement() = #externalMacro(
 ///                       ``SwiftSyntaxCorrectableRule``.
 @attached(
     extension,
-    conformances: SwiftSyntaxRule, SwiftSyntaxCorrectableRule,
+    conformances: SwiftSyntaxRule, SwiftSyntaxCorrectableRule, Sendable,
     names: named(makeVisitor(file:)), named(preprocess(file:)), named(makeRewriter(file:))
 )
 public macro SwiftSyntaxRule(foldExpressions: Bool = false, explicitRewriter: Bool = false) = #externalMacro(

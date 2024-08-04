@@ -15,19 +15,9 @@ struct DeploymentTargetConfiguration: SeverityBasedRuleConfiguration {
         var configurationKey: String {
             rawValue + "_deployment_target"
         }
-
-        var appExtensionCounterpart: Self? {
-            switch self {
-            case .iOS: return Self.iOSApplicationExtension
-            case .macOS: return Self.macOSApplicationExtension
-            case .watchOS: return Self.watchOSApplicationExtension
-            case .tvOS: return Self.tvOSApplicationExtension
-            default: return nil
-            }
-        }
     }
 
-    class Version: Equatable, Comparable {
+    struct Version: Equatable, Comparable, Sendable {
         let platform: Platform
         var major: Int
         var minor: Int
@@ -47,16 +37,9 @@ struct DeploymentTargetConfiguration: SeverityBasedRuleConfiguration {
             self.patch = patch
         }
 
-        convenience init(platform: Platform, rawValue: String) throws {
-            let (major, minor, patch) = try Self.parseVersion(string: rawValue)
-            self.init(platform: platform, major: major, minor: minor, patch: patch)
-        }
-
-        fileprivate func update(using value: Any) throws {
+        init(platform: Platform, value: Any) throws {
             let (major, minor, patch) = try Self.parseVersion(string: String(describing: value))
-            self.major = major
-            self.minor = minor
-            self.patch = patch
+            self.init(platform: platform, major: major, minor: minor, patch: patch)
         }
 
         private static func parseVersion(string: String) throws -> (Int, Int, Int) {
@@ -80,11 +63,11 @@ struct DeploymentTargetConfiguration: SeverityBasedRuleConfiguration {
             }
         }
 
-        static func == (lhs: Version, rhs: Version) -> Bool {
+        static func == (lhs: Self, rhs: Self) -> Bool {
             lhs.major == rhs.major && lhs.minor == rhs.minor && lhs.patch == rhs.patch
         }
 
-        static func < (lhs: Version, rhs: Version) -> Bool {
+        static func < (lhs: Self, rhs: Self) -> Bool {
             if lhs.major != rhs.major {
                 return lhs.major < rhs.major
             }
@@ -107,17 +90,8 @@ struct DeploymentTargetConfiguration: SeverityBasedRuleConfiguration {
 
     private(set) var severityConfiguration = SeverityConfiguration<Parent>(.warning)
 
-    private let targets: [String: Version]
-
     var parameterDescription: RuleConfigurationDescription? {
-        severityConfiguration
-        for (platform, target) in targets.sorted(by: { $0.key < $1.key }) {
-            platform => .symbol(target.stringValue)
-        }
-    }
-
-    init() {
-        self.targets = Dictionary(uniqueKeysWithValues: [
+        let targets = Dictionary(uniqueKeysWithValues: [
                 iOSDeploymentTarget,
                 iOSAppExtensionDeploymentTarget,
                 macOSDeploymentTarget,
@@ -127,8 +101,13 @@ struct DeploymentTargetConfiguration: SeverityBasedRuleConfiguration {
                 tvOSDeploymentTarget,
                 tvOSAppExtensionDeploymentTarget,
         ].map { ($0.platform.configurationKey, $0) })
+        severityConfiguration
+        for (platform, target) in targets.sorted(by: { $0.key < $1.key }) {
+            platform => .symbol(target.stringValue)
+        }
     }
 
+    // swiftlint:disable:next cyclomatic_complexity
     mutating func apply(configuration: Any) throws {
         guard let configuration = configuration as? [String: Any] else {
             throw Issue.invalidConfiguration(ruleID: Parent.identifier)
@@ -138,14 +117,43 @@ struct DeploymentTargetConfiguration: SeverityBasedRuleConfiguration {
                 try severityConfiguration.apply(configuration: value)
                 continue
             }
-            guard let target = targets[key] else {
-                throw Issue.invalidConfiguration(ruleID: Parent.identifier)
-            }
-            try target.update(using: value)
-            if let extensionConfigurationKey = target.platform.appExtensionCounterpart?.configurationKey,
-               configuration[extensionConfigurationKey] == nil,
-               let child = targets[extensionConfigurationKey] {
-                try child.update(using: value)
+            switch key {
+            case iOSDeploymentTarget.platform.configurationKey:
+                iOSDeploymentTarget = try Version(platform: .iOS, value: value)
+                let extensionKey = Platform.iOSApplicationExtension.configurationKey
+                if configuration[extensionKey] == nil {
+                    iOSAppExtensionDeploymentTarget = try Version(platform: .iOSApplicationExtension, value: value)
+                }
+            case iOSAppExtensionDeploymentTarget.platform.configurationKey:
+                iOSAppExtensionDeploymentTarget = try Version(platform: .iOSApplicationExtension, value: value)
+            case macOSDeploymentTarget.platform.configurationKey:
+                macOSDeploymentTarget = try Version(platform: .macOS, value: value)
+                let extensionKey = Platform.macOSApplicationExtension.configurationKey
+                if configuration[extensionKey] == nil {
+                    macOSAppExtensionDeploymentTarget = try Version(platform: .macOSApplicationExtension, value: value)
+                }
+            case macOSAppExtensionDeploymentTarget.platform.configurationKey:
+                macOSAppExtensionDeploymentTarget = try Version(platform: .macOSApplicationExtension, value: value)
+            case watchOSDeploymentTarget.platform.configurationKey:
+                watchOSDeploymentTarget = try Version(platform: .watchOS, value: value)
+                let extensionKey = Platform.watchOSApplicationExtension.configurationKey
+                if configuration[extensionKey] == nil {
+                    watchOSAppExtensionDeploymentTarget = try Version(
+                        platform: .watchOSApplicationExtension,
+                        value: value
+                    )
+                }
+            case watchOSAppExtensionDeploymentTarget.platform.configurationKey:
+                watchOSAppExtensionDeploymentTarget = try Version(platform: .watchOSApplicationExtension, value: value)
+            case tvOSDeploymentTarget.platform.configurationKey:
+                tvOSDeploymentTarget = try Version(platform: .tvOS, value: value)
+                let extensionKey = Platform.tvOSApplicationExtension.configurationKey
+                if configuration[extensionKey] == nil {
+                    tvOSAppExtensionDeploymentTarget = try Version(platform: .tvOSApplicationExtension, value: value)
+                }
+            case tvOSAppExtensionDeploymentTarget.platform.configurationKey:
+                tvOSAppExtensionDeploymentTarget = try Version(platform: .tvOSApplicationExtension, value: value)
+            default: throw Issue.invalidConfiguration(ruleID: Parent.identifier)
             }
         }
     }

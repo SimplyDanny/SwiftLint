@@ -16,7 +16,7 @@ final class SwiftSyntaxRuleTests: XCTestCase {
             expandedSource: """
             struct Hello {}
 
-            extension Hello: SwiftSyntaxRule {
+            extension Hello: SwiftSyntaxRule, Sendable {
                 func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
                     Visitor(configuration: configuration, file: file)
                 }
@@ -35,7 +35,7 @@ final class SwiftSyntaxRuleTests: XCTestCase {
             expandedSource: """
             struct Hello {}
 
-            extension Hello: SwiftSyntaxRule {
+            extension Hello: SwiftSyntaxRule, Sendable {
                 func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
                     Visitor(configuration: configuration, file: file)
                 }
@@ -54,7 +54,7 @@ final class SwiftSyntaxRuleTests: XCTestCase {
             expandedSource: """
             struct Hello {}
 
-            extension Hello: SwiftSyntaxRule {
+            extension Hello: SwiftSyntaxRule, Sendable {
                 func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
                     Visitor(configuration: configuration, file: file)
                 }
@@ -86,7 +86,7 @@ final class SwiftSyntaxRuleTests: XCTestCase {
             expandedSource: """
             struct Hello {}
 
-            extension Hello: SwiftSyntaxRule {
+            extension Hello: SwiftSyntaxRule, Sendable {
                 func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
                     Visitor(configuration: configuration, file: file)
                 }
