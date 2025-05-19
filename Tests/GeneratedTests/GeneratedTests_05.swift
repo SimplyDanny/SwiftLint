@@ -7,6 +7,12 @@
 @testable import SwiftLintCore
 import TestHelpers
 
+final class LegacyConstantRuleGeneratedTests: SwiftLintTestCase {
+    func testWithDefaultConfiguration() {
+        verifyRule(LegacyConstantRule.description)
+    }
+}
+
 final class LegacyConstructorRuleGeneratedTests: SwiftLintTestCase {
     func testWithDefaultConfiguration() {
         verifyRule(LegacyConstructorRule.description)
@@ -148,11 +154,5 @@ final class NSLocalizedStringRequireBundleRuleGeneratedTests: SwiftLintTestCase 
 final class NSNumberInitAsFunctionReferenceRuleGeneratedTests: SwiftLintTestCase {
     func testWithDefaultConfiguration() {
         verifyRule(NSNumberInitAsFunctionReferenceRule.description)
-    }
-}
-
-final class NSObjectPreferIsEqualRuleGeneratedTests: SwiftLintTestCase {
-    func testWithDefaultConfiguration() {
-        verifyRule(NSObjectPreferIsEqualRule.description)
     }
 }

@@ -85,6 +85,12 @@ final class ImplicitReturnRuleGeneratedTests: SwiftLintTestCase {
     }
 }
 
+final class ImplicitThrownTypeRuleGeneratedTests: SwiftLintTestCase {
+    func testWithDefaultConfiguration() {
+        verifyRule(ImplicitThrownTypeRule.description)
+    }
+}
+
 final class ImplicitlyUnwrappedOptionalRuleGeneratedTests: SwiftLintTestCase {
     func testWithDefaultConfiguration() {
         verifyRule(ImplicitlyUnwrappedOptionalRule.description)
@@ -148,11 +154,5 @@ final class LeadingWhitespaceRuleGeneratedTests: SwiftLintTestCase {
 final class LegacyCGGeometryFunctionsRuleGeneratedTests: SwiftLintTestCase {
     func testWithDefaultConfiguration() {
         verifyRule(LegacyCGGeometryFunctionsRule.description)
-    }
-}
-
-final class LegacyConstantRuleGeneratedTests: SwiftLintTestCase {
-    func testWithDefaultConfiguration() {
-        verifyRule(LegacyConstantRule.description)
     }
 }

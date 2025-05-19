@@ -90,6 +90,7 @@ public let builtInRules: [any Rule.Type] = [
     ImplicitGetterRule.self,
     ImplicitOptionalInitializationRule.self,
     ImplicitReturnRule.self,
+    ImplicitThrownTypeRule.self,
     ImplicitlyUnwrappedOptionalRule.self,
     InclusiveLanguageRule.self,
     IncompatibleConcurrencyAnnotationRule.self,
