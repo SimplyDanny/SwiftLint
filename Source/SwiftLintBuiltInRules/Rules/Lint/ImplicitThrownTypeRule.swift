@@ -11,14 +11,15 @@ struct ImplicitThrownTypeRule: Rule {
         description: "Function should not throw implicit error types",
         kind: .lint,
         nonTriggeringExamples: [
-            Example(""),
+            Example("func f() {}"),
+            Example("func f() throws(E) {}"),
         ],
         triggeringExamples: [
-            Example(""),
+            Example("func f() throws {}"),
         ],
         corrections: [
-            Example(""):
-                Example(""),
+            Example("func f() throws {}"):
+                Example("func f() throws(any Error) {}"),
         ]
     )
 }
