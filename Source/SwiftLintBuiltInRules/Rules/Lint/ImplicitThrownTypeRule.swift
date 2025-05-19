@@ -16,6 +16,16 @@ struct ImplicitThrownTypeRule: Rule {
         ],
         triggeringExamples: [
             Example("func f() throws {}"),
+            Example("var i: Int { get throws { 1 }}"),
+            Example(
+                """
+                struct S {
+                    init() throws {}
+                    subscript() throws -> Int { 1 }
+                }
+                """),
+            Example("let f: () throws -> Void = {}"),
+            Example("func f(_ g: () throws -> Void) rethrows {}"),
         ],
         corrections: [
             Example("func f() throws {}"):
