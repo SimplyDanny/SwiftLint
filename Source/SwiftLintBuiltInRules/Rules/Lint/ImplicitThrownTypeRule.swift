@@ -8,7 +8,7 @@ struct ImplicitThrownTypeRule: Rule {
     static let description = RuleDescription(
         identifier: "implicit_thrown_type",
         name: "Implicit Thrown Type",
-        description: "",
+        description: "Function should not throw implicit error types",
         kind: .lint,
         nonTriggeringExamples: [
             Example(""),
