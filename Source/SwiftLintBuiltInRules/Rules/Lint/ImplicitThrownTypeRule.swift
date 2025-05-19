@@ -26,6 +26,21 @@ struct ImplicitThrownTypeRule: Rule {
 
 private extension ImplicitThrownTypeRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
-
+        override func visitPost(_ node: FunctionDeclSyntax) {
+            guard let throwClause = node.signature.effectSpecifiers?.throwsClause,
+                  throwClause.leftParen == nil else {
+                return
+            }
+            violations.append(
+                .init(
+                    position: throwClause.positionAfterSkippingLeadingTrivia,
+                    correction: .init(
+                        start: throwClause.endPositionBeforeTrailingTrivia,
+                        end: throwClause.endPositionBeforeTrailingTrivia,
+                        replacement: "(any Error)"
+                    )
+                )
+            )
+        }
     }
 }
