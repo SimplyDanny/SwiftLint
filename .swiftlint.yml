@@ -127,8 +127,3 @@ custom_rules:
     message: Do not use @testable imports
     regex: ^\s*@testable\s+import\s+\w+
     severity: error
-  implicit_thrown_type:
-    name: Implicit Thrown Type
-    message: Prefer specifying the error type in `throws` declarations
-    regex: throws\s*(?!\()
-    severity: warning
