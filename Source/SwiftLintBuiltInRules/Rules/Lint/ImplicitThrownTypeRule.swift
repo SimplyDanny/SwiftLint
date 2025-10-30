@@ -10,6 +10,7 @@ struct ImplicitThrownTypeRule: Rule {
         name: "Implicit Thrown Type",
         description: "Function should not throw implicit error types",
         kind: .lint,
+        minSwiftVersion: .six,
         nonTriggeringExamples: [
             Example("func f() {}"),
             Example("func f() throws(E) {}"),
